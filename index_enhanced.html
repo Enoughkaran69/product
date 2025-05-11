@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Review Products</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              DEFAULT: '#007bff',
+              hover: '#0056b3',
+              light: '#e6f2ff'
+            },
+            success: {
+              DEFAULT: '#28a745',
+              light: '#e6f7eb'
+            }
+          },
+          animation: {
+            'fade-in-scale': 'fadeInScale 0.3s ease forwards',
+          },
+          keyframes: {
+            fadeInScale: {
+              '0%': { opacity: '0', transform: 'scale(0.8)' },
+              '100%': { opacity: '1', transform: 'scale(1)' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen">
+  <!-- Header -->
+  <header class="bg-white shadow-md sticky top-0 z-40">
+    <div class="container mx-auto px-4">
+      <div class="flex justify-between items-center py-4">
+        <div class="flex items-center space-x-3">
+          <i class="fas fa-shopping-bag text-3xl text-primary"></i>
+          <h1 class="text-2xl font-bold text-gray-900">ShopReview</h1>
+        </div>
+        <div class="flex items-center space-x-4">
+          <div class="relative hidden md:block">
+            <input
+              type="text"
+              id="headerSearchInput"
+              placeholder="Quick search..."
+              class="pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+            />
+            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+          </div>
+          <nav class="hidden md:flex space-x-6">
+            <a href="#" class="font-medium text-gray-700 hover:text-primary transition-colors">Home</a>
+            <a href="#" class="font-medium text-gray-700 hover:text-primary transition-colors">Categories</a>
+            <a href="#" class="font-medium text-gray-700 hover:text-primary transition-colors">Deals</a>
+            <a href="#" class="font-medium text-gray-700 hover:text-primary transition-colors">Contact</a>
+          </nav>
+          <button class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
+            <i class="fas fa-user text-gray-700"></i>
+          </button>
+          <button class="md:hidden p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
+            <i class="fas fa-bars text-gray-700"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-4 py-8">
+    <section class="mb-12 text-center">
+      <h2 class="text-4xl font-bold mb-3 text-gray-900">Featured Products</h2>
+      <p class="text-gray-600 max-w-2xl mx-auto">Discover our curated selection of the finest products available, all thoroughly reviewed and tested for quality.</p>
+      
+      <div class="mt-8 bg-white rounded-xl shadow-md p-6 max-w-3xl mx-auto">
+        <div class="relative">
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Search products by name, description or category..."
+            class="w-full pl-12 pr-4 py-4 text-lg border border-gray-200 rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-all"
+          />
+          <i class="fas fa-search absolute left-4 top-5 text-xl text-gray-400"></i>
+        </div>
+      </div>
+    </section>
+    
+    <div id="loading" class="text-center text-lg font-bold text-gray-600 my-12">
+      <i class="fas fa-spinner fa-spin mr-2"></i> Loading products...
+    </div>
+    <div id="error" class="hidden text-center my-12">
+      <div class="inline-block bg-red-50 border border-red-200 rounded-lg p-4">
+        <p class="text-lg font-bold text-red-500 flex items-center">
+          <i class="fas fa-exclamation-circle mr-2"></i> Failed to load products
+        </p>
+        <p class="text-sm text-red-400 mt-1">Please try again later or refresh the page</p>
+      </div>
+    </div>
+    
+    <div id="productContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto"></div>
+    
+    <div class="flex justify-center mt-12 space-x-4">
+      <button id="prevBtn" class="px-6 py-3 text-lg font-semibold border-2 border-primary text-primary rounded-full hover:bg-primary hover:text-white transition-colors flex items-center">
+        <i class="fas fa-arrow-left mr-2"></i> Previous
+      </button>
+      <button id="nextBtn" class="px-6 py-3 text-lg font-semibold border-2 border-primary text-primary rounded-full hover:bg-primary hover:text-white transition-colors flex items-center">
+        Next <i class="fas fa-arrow-right ml-2"></i>
+      </button>
+    </div>
+  </main>
+
+  <footer class="bg-gray-900 text-white py-8 mt-16">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col md:flex-row justify-between">
+        <div class="mb-6 md:mb-0">
+          <div class="flex items-center space-x-3">
+            <i class="fas fa-shopping-bag text-3xl text-primary"></i>
+            <h2 class="text-2xl font-bold">ShopReview</h2>
+          </div>
+          <p class="mt-2 text-gray-400 max-w-md">The best place to find honest reviews of quality products at the best prices.</p>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-8">
+          <div>
+            <h3 class="text-lg font-semibold mb-4">Shop</h3>
+            <ul class="space-y-2">
+              <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Products</a></li>
+              <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Categories</a></li>
+              <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Deals</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold mb-4">Company</h3>
+            <ul class="space-y-2">
+              <li><a href="#" class="text-gray-400 hover:text-white transition-colors">About Us</a></li>
+              <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Contact</a></li>
+              <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Careers</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold mb-4">Support</h3>
+            <ul class="space-y-2">
+              <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Help Center</a></li>
+              <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Privacy Policy</a></li>
+              <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Terms & Conditions</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="border-t border-gray-800 mt-8 pt-6 flex flex-col md:flex-row justify-between items-center">
+        <p class="text-gray-400">© 2025 ShopReview. All rights reserved.</p>
+        <div class="flex space-x-4 mt-4 md:mt-0">
+          <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-facebook"></i></a>
+          <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-twitter"></i></a>
+          <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-instagram"></i></a>
+          <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-pinterest"></i></a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Modal -->
+<!-- Modal -->
+<div id="productModal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 hidden">
+  <div class="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] shadow-2xl animate-fade-in-scale overflow-y-auto">
+    <div id="modalContent" class="p-4">
+      <!-- Your dynamic content goes here -->
+    </div>
+  </div>
+</div>
+
+
+  <script>
+    const apiUrl = "https://firebase-append.vercel.app";
+    let page = 1;
+    const limit = 6;
+    let products = [];
+    let totalFetched = 0;
+
+    async function fetchProducts() {
+      document.getElementById("loading").classList.remove("hidden");
+      document.getElementById("loading").style.display = "block";
+      document.getElementById("error").style.display = "none";
+      try {
+        const response = await fetch(`${apiUrl}/getAll/products?page=${page}&limit=${limit}`);
+        const responseData = await response.json();
+
+        if (Array.isArray(responseData)) {
+          products = responseData;
+          totalFetched = responseData.length;
+        } else {
+          products = responseData.products || [];
+          totalFetched = responseData.total || 0;
+        }
+        renderProducts();
+      } catch (error) {
+        document.getElementById("error").style.display = "block";
+      } finally {
+        document.getElementById("loading").style.display = "none";
+      }
+    }
+
+    function renderProducts() {
+      const container = document.getElementById("productContainer");
+      container.innerHTML = "";
+      const search = document.getElementById("searchInput").value.toLowerCase();
+      const headerSearch = document.getElementById("headerSearchInput").value.toLowerCase();
+      const combinedSearch = search || headerSearch;
+      
+      const filteredProducts = products.filter(
+        (p) =>
+          p.title.toLowerCase().includes(combinedSearch) ||
+          p.description.toLowerCase().includes(combinedSearch)
+      );
+      
+      if (filteredProducts.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-16">
+            <i class="fas fa-search text-4xl text-gray-300 mb-4"></i>
+            <h3 class="text-xl font-bold text-gray-700">No products found</h3>
+            <p class="text-gray-500 mt-2">Try adjusting your search criteria</p>
+          </div>
+        `;
+        return;
+      }
+      
+      filteredProducts.forEach((product) => {
+        // Calculate discount percentage
+        const originalPrice = parseFloat(product.originalPrice);
+        const currentPrice = parseFloat(product.price);
+        const discountPercentage = Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
+        
+        const card = document.createElement("div");
+        card.className = "bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 flex flex-col";
+        card.innerHTML = `
+          <div class="relative">
+            <div class="h-64 overflow-hidden">
+              <img src="${product.imageUrl}" alt="${product.title}" class="w-full h-full object-contain bg-gray-100" />
+            </div>
+            ${discountPercentage > 0 ? `
+              <div class="absolute top-3 right-3 bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full">
+                -${discountPercentage}%
+              </div>
+            ` : ''}
+          </div>
+          <div class="p-5 flex flex-col h-64">
+            <div class="mb-2">
+              <span class="text-xs bg-primary-light text-primary px-2 py-1 rounded-full">Featured</span>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 h-16 overflow-hidden">${product.title}</h3>
+            <p class="text-gray-600 text-sm mb-4 overflow-hidden h-16 line-clamp-3">${product.description}</p>
+            <div class="mt-auto">
+              <div class="mb-3 flex items-baseline">
+                <span class="text-xl font-bold text-success">₹${product.price}</span>
+                <span class="text-gray-400 line-through ml-2 text-sm">₹${product.originalPrice}</span>
+              </div>
+              <div class="flex space-x-2">
+                <button onclick='window.open("${product.productLink}", "_blank")' class="flex-1 bg-primary hover:bg-primary-hover text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center">
+                  <i class="fas fa-shopping-cart mr-2"></i> Buy Now
+                </button>
+                <button onclick='showModal(${JSON.stringify(product)})' class="flex-1 border-2 border-primary text-primary hover:bg-primary hover:text-white font-semibold py-3 px-4 rounded-lg transition-colors">
+                  View Details
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+      
+      document.getElementById("prevBtn").style.display = page > 1 ? "inline-block" : "none";
+      document.getElementById("nextBtn").style.display = products.length < limit ? "none" : "inline-block";
+    }
+
+    function showModal(product) {
+      // Calculate discount percentage
+      const originalPrice = parseFloat(product.originalPrice);
+      const currentPrice = parseFloat(product.price);
+      const discountPercentage = Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
+      
+      document.getElementById("modalContent").innerHTML = `
+        <div class="flex flex-col md:flex-row">
+          <div class="w-full md:w-1/2 bg-gray-100 p-8 flex items-center justify-center">
+            <img src="${product.imageUrl}" alt="${product.title}" class="max-w-full max-h-80 object-contain" />
+          </div>
+          <div class="w-full md:w-1/2 p-8">
+            <div class="flex justify-between items-center mb-4">
+              <div>
+                <span class="text-xs bg-primary-light text-primary px-2 py-1 rounded-full">Featured</span>
+                ${discountPercentage > 0 ? `
+                  <span class="text-xs bg-red-100 text-red-500 px-2 py-1 rounded-full ml-2">
+                    ${discountPercentage}% OFF
+                  </span>
+                ` : ''}
+              </div>
+              <button onclick="closeModal()" class="text-3xl font-bold text-gray-400 hover:text-gray-700 transition-colors w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100">
+                &times;
+              </button>
+            </div>
+            
+            <h2 class="text-3xl font-bold text-gray-900 mb-2">${product.title}</h2>
+            
+            <div class="flex items-center mb-4">
+              <div class="flex text-yellow-400">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star-half-alt"></i>
+              </div>
+              <span class="text-gray-500 ml-2">4.5 (128 reviews)</span>
+            </div>
+            
+            <div class="bg-gray-50 rounded-xl p-4 mb-6">
+              <div class="flex items-baseline">
+                <span class="text-3xl font-bold text-success">₹${product.price}</span>
+                <span class="text-gray-400 line-through ml-3">₹${product.originalPrice}</span>
+              </div>
+              <p class="text-sm text-gray-500 mt-1">Free shipping on orders over ₹500</p>
+            </div>
+            
+            <div class="prose prose-sm text-gray-700 mb-6 max-w-none">
+              <p>${product.description}</p>
+            </div>
+            
+            <div class="border-t border-gray-200 pt-6 mb-6">
+              <h3 class="font-semibold text-gray-900 mb-2">Key Features:</h3>
+              <ul class="text-gray-700 space-y-1">
+                <li class="flex items-start">
+                  <i class="fas fa-check text-success mt-1 mr-2"></i>
+                  <span>Premium quality materials</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check text-success mt-1 mr-2"></i>
+                  <span>30-day money-back guarantee</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check text-success mt-1 mr-2"></i>
+                  <span>12-month warranty included</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+              <a href="${product.productLink}" target="_blank" class="w-full bg-primary hover:bg-primary-hover text-white font-semibold py-4 px-6 rounded-lg transition-colors text-center flex items-center justify-center">
+                <i class="fas fa-shopping-cart mr-2"></i> Buy Now
+              </a>
+              <button class="w-full border-2 border-gray-300 text-gray-700 font-semibold py-4 px-6 rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center">
+                <i class="far fa-heart mr-2"></i> Save for Later
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.getElementById("productModal").style.display = "flex";
+    }
+
+    function closeModal() {
+      document.getElementById("productModal").style.display = "none";
+    }
+
+    // Initialize search event listeners for both search inputs
+    document.getElementById("searchInput").addEventListener("input", renderProducts);
+    document.getElementById("headerSearchInput").addEventListener("input", renderProducts);
+
+    document.getElementById("prevBtn").addEventListener("click", () => {
+      page--;
+      fetchProducts();
+      // Scroll to top after page change
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    
+    document.getElementById("nextBtn").addEventListener("click", () => {
+      page++;
+      fetchProducts();
+      // Scroll to top after page change
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // Close modal when clicking outside of it
+    document.getElementById("productModal").addEventListener("click", (event) => {
+      if (event.target === document.getElementById("productModal")) {
+        closeModal();
+      }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeModal();
+      }
+    });
+
+    fetchProducts();
+  </script>
+</body>
+</html>
