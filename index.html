@@ -176,17 +176,24 @@
   <script>
     const apiUrl = "https://firebase-append.vercel.app";
     let page = 1;
-    const limit = 50;
+    const limit = 5;
     let products = [];
     let totalFetched = 0;
+    let lastDocId = null;
+
 
     async function fetchProducts() {
       document.getElementById("loading").classList.remove("hidden");
       document.getElementById("loading").style.display = "block";
       document.getElementById("error").style.display = "none";
       try {
-        const response = await fetch(`${apiUrl}/getAll/products?page=${page}&limit=${limit}`);
+        const response = await fetch(`${apiUrl}/getAll/products?limit=${limit}&lastDocId=${lastDocId || ""}`);
+
         const responseData = await response.json();
+        if (responseData.length > 0) {
+  lastDocId = responseData[responseData.length - 1].id;
+}
+
 
         if (Array.isArray(responseData)) {
           products = responseData;
@@ -251,7 +258,7 @@
               <span class="text-xs bg-primary-light text-primary px-2 py-1 rounded-full">Featured</span>
             </div>
             <h3 class="text-xl font-bold text-gray-900 h-16 overflow-hidden">${product.title}</h3>
-            <p class="text-gray-600 text-sm mb-4 overflow-hidden h-16 line-clamp-3">${product.description}</p>
+           
             <div class="mt-auto">
               <div class="mb-3 flex items-baseline">
                 <span class="text-xl font-bold text-success">₹${product.price}</span>
