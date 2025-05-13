@@ -20,15 +20,6 @@
               DEFAULT: '#28a745',
               light: '#e6f7eb'
             }
-          },
-          animation: {
-            'fade-in-scale': 'fadeInScale 0.3s ease forwards',
-          },
-          keyframes: {
-            fadeInScale: {
-              '0%': { opacity: '0', transform: 'scale(0.8)' },
-              '100%': { opacity: '1', transform: 'scale(1)' }
-            }
           }
         }
       }
@@ -55,10 +46,11 @@
             <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
           </div>
           <nav class="hidden md:flex space-x-6">
-            <a href="#" class="font-medium text-gray-700 hover:text-primary transition-colors">Home</a>
+            <a href="index.html" class="font-medium text-gray-700 hover:text-primary transition-colors">Home</a>
             <a href="#" class="font-medium text-gray-700 hover:text-primary transition-colors">Categories</a>
             <a href="#" class="font-medium text-gray-700 hover:text-primary transition-colors">Deals</a>
-            <a href="#" class="font-medium text-gray-700 hover:text-primary transition-colors">Contact</a>
+            <a href="https://www.youtube.com/yourchannel" target="_blank" rel="noopener noreferrer" class="font-medium text-gray-700 hover:text-primary transition-colors">About Us</a>
+            <a href="terms.html" class="font-medium text-gray-700 hover:text-primary transition-colors">Terms</a>
           </nav>
           <button class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
             <i class="fas fa-user text-gray-700"></i>
@@ -104,10 +96,10 @@
     <div id="productContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto"></div>
     
     <div class="flex justify-center mt-12 space-x-4">
-      <button id="prevBtn" class="px-6 py-3 text-lg font-semibold border-2 border-primary text-primary rounded-full hover:bg-primary hover:text-white transition-colors flex items-center">
+      <button id="prevBtn" class="px-6 py-3 text-lg font-semibold border-2 border-primary text-primary rounded-full hover:bg-primary hover:text-white transition-colors flex items-center" style="display: none;">
         <i class="fas fa-arrow-left mr-2"></i> Previous
       </button>
-      <button id="nextBtn" class="px-6 py-3 text-lg font-semibold border-2 border-primary text-primary rounded-full hover:bg-primary hover:text-white transition-colors flex items-center">
+      <button id="nextBtn" class="px-6 py-3 text-lg font-semibold border-2 border-primary text-primary rounded-full hover:bg-primary hover:text-white transition-colors flex items-center" style="display: none;">
         Next <i class="fas fa-arrow-right ml-2"></i>
       </button>
     </div>
@@ -127,7 +119,7 @@
           <div>
             <h3 class="text-lg font-semibold mb-4">Shop</h3>
             <ul class="space-y-2">
-              <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Products</a></li>
+              <li><a href="index.html" class="text-gray-400 hover:text-white transition-colors">Products</a></li>
               <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Categories</a></li>
               <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Deals</a></li>
             </ul>
@@ -135,17 +127,15 @@
           <div>
             <h3 class="text-lg font-semibold mb-4">Company</h3>
             <ul class="space-y-2">
-              <li><a href="#" class="text-gray-400 hover:text-white transition-colors">About Us</a></li>
-              <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Contact</a></li>
-              <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Careers</a></li>
+              <li><a href="https://www.youtube.com/yourchannel" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">About Us</a></li>
+              <li><a href="terms.html" class="text-gray-400 hover:text-white transition-colors">Terms & Conditions</a></li>
             </ul>
           </div>
           <div>
             <h3 class="text-lg font-semibold mb-4">Support</h3>
             <ul class="space-y-2">
-              <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Help Center</a></li>
-              <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Privacy Policy</a></li>
-              <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Terms & Conditions</a></li>
+              <li><a href="terms.html#help-centre" class="text-gray-400 hover:text-white transition-colors">Help Center</a></li>
+              <li><a href="terms.html#privacy-policy" class="text-gray-400 hover:text-white transition-colors">Privacy Policy</a></li>
             </ul>
           </div>
         </div>
@@ -161,16 +151,6 @@
       </div>
     </div>
   </footer>
-
-  <!-- Modal -->
-<!-- Modal -->
-<div id="productModal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 hidden">
-  <div class="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] shadow-2xl animate-fade-in-scale overflow-y-auto">
-    <div id="modalContent" class="p-4">
-      <!-- Your dynamic content goes here -->
-    </div>
-  </div>
-</div>
 
 
   <script>
@@ -188,19 +168,26 @@
       document.getElementById("error").style.display = "none";
       try {
         const response = await fetch(`${apiUrl}/getAll/products?limit=${limit}&lastDocId=${lastDocId || ""}`);
+        const apiData = await response.json(); // Renamed responseData for clarity with new structure
 
-        const responseData = await response.json();
-        if (responseData.length > 0) {
-  lastDocId = responseData[responseData.length - 1].id;
-}
+        // Check if apiData has an 'items' property and it's an array
+        if (apiData && Array.isArray(apiData.items)) {
+          products = apiData.items;
+          totalFetched = apiData.items.length; // totalFetched now reflects the number of items in the current page
 
-
-        if (Array.isArray(responseData)) {
-          products = responseData;
-          totalFetched = responseData.length;
+          if (apiData.items.length > 0) {
+            // Update lastDocId from the last item of the current page
+            lastDocId = apiData.items[apiData.items.length - 1].id;
+          }
+          // If apiData.items.length is 0, lastDocId remains unchanged.
+          // The nextBtn logic will hide if products.length (i.e., apiData.items.length) is 0 or < limit.
         } else {
-          products = responseData.products || [];
-          totalFetched = responseData.total || 0;
+          // If the response doesn't have apiData.items or it's not an array,
+          // treat it as no products found for this page.
+          products = [];
+          totalFetched = 0;
+          console.error("API response structure error: 'items' array not found or not an array.", apiData);
+          // lastDocId would remain from the previous successful fetch.
         }
         renderProducts();
       } catch (error) {
@@ -231,6 +218,9 @@
             <p class="text-gray-500 mt-2">Try adjusting your search criteria</p>
           </div>
         `;
+        // Hide pagination buttons if no products are found
+        document.getElementById("prevBtn").style.display = "none";
+        document.getElementById("nextBtn").style.display = "none";
         return;
       }
       
@@ -240,12 +230,24 @@
         const currentPrice = parseFloat(product.price);
         const discountPercentage = Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
         
+        // Prepare title with potential "...more" link
+        const titleCharLimit = 45; // Max characters for the main title part before "..."
+        let titleOutput = product.title;
+        // Check if title is significantly longer to warrant a "...more" link
+        if (product.title.length > titleCharLimit + 15) { 
+            let cutOffPoint = product.title.substring(0, titleCharLimit).lastIndexOf(' ');
+            if (cutOffPoint === -1 || cutOffPoint < titleCharLimit - 20) { // If no space or space is too early
+                cutOffPoint = titleCharLimit;
+            }
+             // Prepare for navigation by ID
+            titleOutput = `${product.title.substring(0, cutOffPoint)}... <a href="#" onclick="event.stopPropagation(); viewProductDetails('${product.id}', ${JSON.stringify(product).replace(/'/g, "&apos;").replace(/"/g, "&quot;")}); return false;" class='text-primary hover:underline font-medium cursor-pointer'>more</a>`;
+        }
         const card = document.createElement("div");
         card.className = "bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 flex flex-col";
         card.innerHTML = `
           <div class="relative">
             <div class="h-64 overflow-hidden">
-              <img src="${product.imageUrl}" alt="${product.title}" class="w-full h-full object-contain bg-gray-100" />
+              <img src="${product.imageUrl}" alt="${product.title}" class="w-full h-full object-contain bg-white" />
             </div>
             ${discountPercentage > 0 ? `
               <div class="absolute top-3 right-3 bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full">
@@ -253,11 +255,12 @@
               </div>
             ` : ''}
           </div>
-          <div class="p-5 flex flex-col h-64">
-            <div class="mb-2">
+          <div class="p-5 flex flex-col flex-grow"> <!-- Use flex-grow instead of fixed h-64 to allow content to determine height -->
+            <div class="mb-2 flex flex-wrap gap-2 items-center">
               <span class="text-xs bg-primary-light text-primary px-2 py-1 rounded-full">Featured</span>
+              ${product.category ? `<span class="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full">${product.category.charAt(0).toUpperCase() + product.category.slice(1)}</span>` : ''}
             </div>
-            <h3 class="text-xl font-bold text-gray-900 h-16 overflow-hidden">${product.title}</h3>
+            <h3 class="text-xl font-bold text-gray-900 h-16 overflow-hidden leading-tight mb-2">${titleOutput}</h3>
            
             <div class="mt-auto">
               <div class="mb-3 flex items-baseline">
@@ -268,9 +271,9 @@
                 <button onclick='window.open("${product.productLink}", "_blank")' class="flex-1 bg-primary hover:bg-primary-hover text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center">
                   <i class="fas fa-shopping-cart mr-2"></i> Buy Now
                 </button>
-                <button onclick='showModal(${JSON.stringify(product)})' class="flex-1 border-2 border-primary text-primary hover:bg-primary hover:text-white font-semibold py-3 px-4 rounded-lg transition-colors">
+                <a href="#" onclick="viewProductDetails('${product.id}', ${JSON.stringify(product).replace(/'/g, "&apos;").replace(/"/g, "&quot;")}); return false;" class="flex-1 text-center border-2 border-primary text-primary hover:bg-primary hover:text-white font-semibold py-3 px-4 rounded-lg transition-colors">
                   View Details
-                </button>
+                    </a>
               </div>
             </div>
           </div>
@@ -278,95 +281,14 @@
         container.appendChild(card);
       });
       
-      document.getElementById("prevBtn").style.display = page > 1 ? "inline-block" : "none";
-      document.getElementById("nextBtn").style.display = products.length < limit ? "none" : "inline-block";
+      document.getElementById("prevBtn").style.display = page > 1 ? "inline-flex" : "none";
+      document.getElementById("nextBtn").style.display = (products.length < limit || filteredProducts.length === 0) ? "none" : "inline-flex";
     }
-
-    function showModal(product) {
-      // Calculate discount percentage
-      const originalPrice = parseFloat(product.originalPrice);
-      const currentPrice = parseFloat(product.price);
-      const discountPercentage = Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
-      
-      document.getElementById("modalContent").innerHTML = `
-        <div class="flex flex-col md:flex-row">
-          <div class="w-full md:w-1/2 bg-gray-100 p-8 flex items-center justify-center">
-            <img src="${product.imageUrl}" alt="${product.title}" class="max-w-full max-h-80 object-contain" />
-          </div>
-          <div class="w-full md:w-1/2 p-8">
-            <div class="flex justify-between items-center mb-4">
-              <div>
-                <span class="text-xs bg-primary-light text-primary px-2 py-1 rounded-full">Featured</span>
-                ${discountPercentage > 0 ? `
-                  <span class="text-xs bg-red-100 text-red-500 px-2 py-1 rounded-full ml-2">
-                    ${discountPercentage}% OFF
-                  </span>
-                ` : ''}
-              </div>
-              <button onclick="closeModal()" class="text-3xl font-bold text-gray-400 hover:text-gray-700 transition-colors w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100">
-                &times;
-              </button>
-            </div>
-            
-            <h2 class="text-3xl font-bold text-gray-900 mb-2">${product.title}</h2>
-            
-            <div class="flex items-center mb-4">
-              <div class="flex text-yellow-400">
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star-half-alt"></i>
-              </div>
-              <span class="text-gray-500 ml-2">4.5 (128 reviews)</span>
-            </div>
-            
-            <div class="bg-gray-50 rounded-xl p-4 mb-6">
-              <div class="flex items-baseline">
-                <span class="text-3xl font-bold text-success">₹${product.price}</span>
-                <span class="text-gray-400 line-through ml-3">₹${product.originalPrice}</span>
-              </div>
-              <p class="text-sm text-gray-500 mt-1">Free shipping on orders over ₹500</p>
-            </div>
-            
-            <div class="prose prose-sm text-gray-700 mb-6 max-w-none">
-              <p>${product.description}</p>
-            </div>
-            
-            <div class="border-t border-gray-200 pt-6 mb-6">
-              <h3 class="font-semibold text-gray-900 mb-2">Key Features:</h3>
-              <ul class="text-gray-700 space-y-1">
-                <li class="flex items-start">
-                  <i class="fas fa-check text-success mt-1 mr-2"></i>
-                  <span>Premium quality materials</span>
-                </li>
-                <li class="flex items-start">
-                  <i class="fas fa-check text-success mt-1 mr-2"></i>
-                  <span>30-day money-back guarantee</span>
-                </li>
-                <li class="flex items-start">
-                  <i class="fas fa-check text-success mt-1 mr-2"></i>
-                  <span>12-month warranty included</span>
-                </li>
-              </ul>
-            </div>
-            
-            <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
-              <a href="${product.productLink}" target="_blank" class="w-full bg-primary hover:bg-primary-hover text-white font-semibold py-4 px-6 rounded-lg transition-colors text-center flex items-center justify-center">
-                <i class="fas fa-shopping-cart mr-2"></i> Buy Now
-              </a>
-              <button class="w-full border-2 border-gray-300 text-gray-700 font-semibold py-4 px-6 rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center">
-                <i class="far fa-heart mr-2"></i> Save for Later
-              </button>
-            </div>
-          </div>
-        </div>
-      `;
-      document.getElementById("productModal").style.display = "flex";
-    }
-
-    function closeModal() {
-      document.getElementById("productModal").style.display = "none";
+     function viewProductDetails(productId, productData) {
+      // Store the product data in sessionStorage
+      sessionStorage.setItem(`product_${productId}`, JSON.stringify(productData));
+      // Navigate to the details page with only the ID in the URL
+      window.location.href = `product-details.html?id=${productId}`;
     }
 
     // Initialize search event listeners for both search inputs
@@ -385,20 +307,6 @@
       fetchProducts();
       // Scroll to top after page change
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-
-    // Close modal when clicking outside of it
-    document.getElementById("productModal").addEventListener("click", (event) => {
-      if (event.target === document.getElementById("productModal")) {
-        closeModal();
-      }
-    });
-
-    // Close modal with Escape key
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") {
-        closeModal();
-      }
     });
 
     fetchProducts();
