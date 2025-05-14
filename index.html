@@ -47,14 +47,18 @@
           </div>
           <nav class="hidden md:flex space-x-6">
             <a href="index.html" class="font-medium text-gray-700 hover:text-primary transition-colors">Home</a>
-            <a href="#" class="font-medium text-gray-700 hover:text-primary transition-colors">Categories</a>
-            <a href="#" class="font-medium text-gray-700 hover:text-primary transition-colors">Deals</a>
+            <div class="relative">
+              <a href="#" id="categoriesLink" class="font-medium text-gray-700 hover:text-primary transition-colors flex items-center">
+                Categories <i class="fas fa-chevron-down text-xs ml-1"></i>
+              </a>
+              <div id="categoriesDropdown" class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 hidden py-1">
+                <!-- Category items will be injected here by JavaScript -->
+              </div>
+            </div>
+            <a href="https://www.youtube.com/yourchannel" target="_blank" rel="noopener noreferrer" class="font-medium text-gray-700 hover:text-primary transition-colors">Deals</a>
             <a href="https://www.youtube.com/yourchannel" target="_blank" rel="noopener noreferrer" class="font-medium text-gray-700 hover:text-primary transition-colors">About Us</a>
-            <a href="terms.html" class="font-medium text-gray-700 hover:text-primary transition-colors">Terms</a>
-          </nav>
-          <button class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
-            <i class="fas fa-user text-gray-700"></i>
-          </button>
+               </nav>
+         
           <button class="md:hidden p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
             <i class="fas fa-bars text-gray-700"></i>
           </button>
@@ -120,8 +124,8 @@
             <h3 class="text-lg font-semibold mb-4">Shop</h3>
             <ul class="space-y-2">
               <li><a href="index.html" class="text-gray-400 hover:text-white transition-colors">Products</a></li>
-              <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Categories</a></li>
-              <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Deals</a></li>
+              <li><a href="#" id="footerCategoriesLink" class="text-gray-400 hover:text-white transition-colors">Categories</a></li>
+              <li><a href="https://www.youtube.com/yourchannel" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">Deals</a></li>
             </ul>
           </div>
           <div>
@@ -160,6 +164,7 @@
     let products = [];
     let totalFetched = 0;
     let lastDocId = null;
+    let siteCategories = [];
 
 
     async function fetchProducts() {
@@ -178,6 +183,11 @@
           if (apiData.items.length > 0) {
             // Update lastDocId from the last item of the current page
             lastDocId = apiData.items[apiData.items.length - 1].id;
+          }
+          // Populate categories if available and not already populated (or to refresh them)
+          if (apiData.categories && Array.isArray(apiData.categories)) {
+            siteCategories = apiData.categories;
+            renderCategoriesDropdown();
           }
           // If apiData.items.length is 0, lastDocId remains unchanged.
           // The nextBtn logic will hide if products.length (i.e., apiData.items.length) is 0 or < limit.
@@ -291,6 +301,27 @@
       window.location.href = `product-details.html?id=${productId}`;
     }
 
+    function renderCategoriesDropdown() {
+      const dropdown = document.getElementById('categoriesDropdown');
+      if (!dropdown) return;
+      dropdown.innerHTML = ''; // Clear previous items
+
+      if (siteCategories.length === 0) {
+        dropdown.innerHTML = '<p class="px-4 py-2 text-sm text-gray-500">No categories.</p>';
+        return;
+      }
+
+      siteCategories.forEach(category => {
+        const link = document.createElement('a');
+        // In a real app, this link would filter products by category
+        link.href = `category-products.html?category=${encodeURIComponent(category.toLowerCase())}`; 
+        link.className = 'block px-4 py-2 text-sm text-gray-700 hover:bg-primary-light hover:text-primary transition-colors';
+        link.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+        // No onclick needed, href will handle navigation. Dropdown will close due to document click listener.
+        dropdown.appendChild(link);
+      });
+    }
+
     // Initialize search event listeners for both search inputs
     document.getElementById("searchInput").addEventListener("input", renderProducts);
     document.getElementById("headerSearchInput").addEventListener("input", renderProducts);
@@ -309,6 +340,28 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
+    // Categories dropdown toggle
+    const categoriesLink = document.getElementById('categoriesLink');
+    const categoriesDropdown = document.getElementById('categoriesDropdown');
+    const footerCategoriesLink = document.getElementById('footerCategoriesLink');
+
+    categoriesLink.addEventListener('click', (event) => {
+      event.preventDefault();
+      categoriesDropdown.classList.toggle('hidden');
+    });
+
+    footerCategoriesLink.addEventListener('click', (event) => {
+      event.preventDefault();
+      categoriesDropdown.classList.toggle('hidden');
+      window.scrollTo({ top: categoriesLink.offsetTop - 100, behavior: 'smooth' }); // Scroll near the header dropdown
+    });
+
+    // Close dropdown if clicked outside
+    document.addEventListener('click', (event) => {
+      if (!categoriesLink.contains(event.target) && !categoriesDropdown.contains(event.target) && !footerCategoriesLink.contains(event.target)) {
+        categoriesDropdown.classList.add('hidden');
+      }
+    });
     fetchProducts();
   </script>
 </body>

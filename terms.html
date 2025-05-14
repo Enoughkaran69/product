@@ -33,29 +33,28 @@
       <div class="flex justify-between items-center py-4">
         <div class="flex items-center space-x-3">
           <i class="fas fa-shopping-bag text-3xl text-primary"></i>
-          <h1 class="text-2xl font-bold text-gray-900">ShopReview</h1>
+          <a href="index.html" class="text-2xl font-bold text-gray-900">ShopReview</a>
         </div>
         <div class="flex items-center space-x-4">
           <div class="relative hidden md:block">
             <input
               type="text"
-              id="headerSearchInput"
+              id="headerSearchInputTerms" 
               placeholder="Quick search..."
               class="pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
             />
             <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
           </div>
-          <nav class="hidden md:flex space-x-6">
-            <a href="index.html" class="font-medium text-gray-700 hover:text-primary transition-colors">Home</a>
-            <a href="#" class="font-medium text-gray-700 hover:text-primary transition-colors">Categories</a> 
-            <a href="#" class="font-medium text-gray-700 hover:text-primary transition-colors">Deals</a> 
-            <a href="https://www.youtube.com/yourchannel" target="_blank" rel="noopener noreferrer" class="font-medium text-gray-700 hover:text-primary transition-colors">About Us</a>
-            <a href="terms.html" class="font-medium text-gray-700 hover:text-primary transition-colors">Terms</a>
+          <!-- Navigation Menu -->
+          <nav id="mainNav" class="hidden absolute top-full left-0 w-full bg-white shadow-md py-2 z-30 flex-col space-y-1 md:static md:flex md:flex-row md:items-center md:space-x-6 md:space-y-0 md:w-auto md:bg-transparent md:shadow-none md:py-0">
+            <a href="index.html" class="block px-4 py-2 text-gray-700 hover:text-primary hover:bg-primary-light md:p-0 md:hover:bg-transparent transition-colors">Home</a>
+            <a href="index.html#categoriesLink" class="block px-4 py-2 text-gray-700 hover:text-primary hover:bg-primary-light md:p-0 md:hover:bg-transparent transition-colors">Categories</a> 
+            <a href="https://www.youtube.com/yourchannel" target="_blank" rel="noopener noreferrer" class="block px-4 py-2 text-gray-700 hover:text-primary hover:bg-primary-light md:p-0 md:hover:bg-transparent transition-colors">Deals</a> 
+            <a href="https://www.youtube.com/yourchannel" target="_blank" rel="noopener noreferrer" class="block px-4 py-2 text-gray-700 hover:text-primary hover:bg-primary-light md:p-0 md:hover:bg-transparent transition-colors">About Us</a>
+            <a href="terms.html" class="block px-4 py-2 text-gray-700 hover:text-primary hover:bg-primary-light md:p-0 md:hover:bg-transparent transition-colors">Terms</a>
           </nav>
-          <button class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
-            <i class="fas fa-user text-gray-700"></i>
-          </button>
-          <button class="md:hidden p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
+          <!-- Hamburger Menu Button -->
+          <button id="mobileMenuBtn" class="md:hidden p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
             <i class="fas fa-bars text-gray-700"></i>
           </button>
         </div>
@@ -189,9 +188,24 @@
     </div>
   </footer>
   <script>
-    // Basic script for mobile menu or other simple interactions if needed in future
-    // For now, the header search input on this page is just a visual placeholder
-    // and doesn't need the product search JS from index.html
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mainNav = document.getElementById('mainNav');
+
+    if (mobileMenuBtn && mainNav) {
+      mobileMenuBtn.addEventListener('click', () => {
+        mainNav.classList.toggle('hidden');
+        // Optional: Change hamburger icon to close icon & vice-versa
+        const icon = mobileMenuBtn.querySelector('i');
+        if (mainNav.classList.contains('hidden')) {
+          icon.classList.remove('fa-times');
+          icon.classList.add('fa-bars');
+        } else {
+          icon.classList.remove('fa-bars');
+          icon.classList.add('fa-times');
+        }
+      });
+    }
+    // The header search input on this page is a visual placeholder.
   </script>
 </body>
 </html>
