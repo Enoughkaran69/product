@@ -2,6 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+          <meta name="description" content="Discover the best reviewed products. ShopReview offers curated selections and honest reviews to help you find quality items at great prices." />
+          <meta property="og:title" content="ShopReview - Featured Products & Reviews" />
+          <meta property="og:description" content="Explore top-rated products, read detailed reviews, and find the best deals on ShopReview." />
+          <meta property="og:type" content="website" />
+          <meta property="og:url" content="https://yourwebsite.com/index.html" /> 
+          <meta property="og:image" content="https://yourwebsite.com/og-image.jpg" /> 
+          <meta name="twitter:card" content="summary_large_image" />
+          <!-- Add Favicon links here -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Review Products</title>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -32,7 +40,7 @@
     <div class="container mx-auto px-4">
       <div class="flex justify-between items-center py-4">
         <div class="flex items-center space-x-3">
-          <i class="fas fa-shopping-bag text-3xl text-primary"></i>
+            <i class="fas fa-shopping-bag text-3xl text-primary" aria-hidden="true"></i>
           <h1 class="text-2xl font-bold text-gray-900">ShopReview</h1>
         </div>
         <div class="flex items-center space-x-4">
@@ -43,14 +51,14 @@
               placeholder="Quick search..."
               class="pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
             />
-            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+              <i class="fas fa-search absolute left-3 top-3 text-gray-400" aria-hidden="true"></i>
           </div>
           <!-- Navigation Menu -->
           <nav id="mainNav" class="hidden absolute top-full left-0 right-0 bg-white shadow-md py-2 z-30 flex-col space-y-1 md:static md:flex md:flex-row md:items-center md:space-x-6 md:space-y-0 md:w-auto md:bg-transparent md:shadow-none md:py-0">
             <a href="index.html" class="block px-4 py-2 text-gray-700 hover:text-primary hover:bg-primary-light md:p-0 md:hover:bg-transparent md:font-medium transition-colors">Home</a>
             <div class="relative"> <!-- This div itself will be part of the flex-col layout on mobile -->
               <a href="#" id="categoriesLink" class="block px-4 py-2 text-gray-700 hover:text-primary hover:bg-primary-light md:p-0 md:hover:bg-transparent md:font-medium transition-colors flex items-center justify-between md:justify-start">
-                Categories <i class="fas fa-chevron-down text-xs ml-1"></i>
+                  Categories <i class="fas fa-chevron-down text-xs ml-1" aria-hidden="true"></i>
               </a>
               <!-- Mobile: Dropdown might need to be styled to appear correctly within the flow or as an expansion -->
               <!-- Desktop: Remains absolute positioned -->

@@ -193,7 +193,26 @@
         }
         const apiData = await response.json();
 
-        if (apiData && Array.isArray(apiData.items)) {
+        if (Array.isArray(apiData)) { // Handles the case where API returns an array of products directly
+          productsOnPage = apiData;
+          
+          // Infer totalCategoryProductsCount for pagination logic
+          // If a full page was loaded, assume there might be more.
+          // If less than a full page, assume these are all remaining.
+          if (productsOnPage.length < limit) {
+            totalCategoryProductsCount = ((currentPage - 1) * limit) + productsOnPage.length;
+          } else { // productsOnPage.length === limit
+            // Assume more products exist, to allow 'Next' button to show.
+            // Set totalCategoryProductsCount to be greater than items loaded so far on this page.
+            totalCategoryProductsCount = (currentPage * limit) + 1; 
+          }
+
+          if (productsOnPage.length > 0) {
+            const lastItemOnThisPageId = productsOnPage[productsOnPage.length - 1].id;
+            categoryPageStartCursors[pageToLoad + 1] = lastItemOnThisPageId;
+          }
+          currentPage = pageToLoad;
+        } else if (apiData && Array.isArray(apiData.items)) { // Handles the original expected structure {items: [], totalProducts: N}
           productsOnPage = apiData.items;
           totalCategoryProductsCount = apiData.totalProducts || 0; // Expecting totalProducts for the category
 
@@ -204,9 +223,9 @@
           currentPage = pageToLoad;
         } else {
           productsOnPage = [];
-          // If totalProducts is provided even on an empty items response, use it.
-          totalCategoryProductsCount = apiData.totalProducts || totalCategoryProductsCount; 
-          console.error("API response structure error for category products: 'items' array not found or not an array.", apiData);
+          // If apiData exists and has totalProducts, use it, otherwise keep the old totalCategoryProductsCount
+          totalCategoryProductsCount = (apiData && typeof apiData.totalProducts === 'number') ? apiData.totalProducts : totalCategoryProductsCount;
+          console.error("API response structure error for category products: Expected an array of products, or an object with an 'items' array. Received:", apiData);
            if (pageToLoad > 1) {
             currentPage = pageToLoad;
           }
