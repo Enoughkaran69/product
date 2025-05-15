@@ -45,21 +45,25 @@
             />
             <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
           </div>
-          <nav class="hidden md:flex space-x-6">
-            <a href="index.html" class="font-medium text-gray-700 hover:text-primary transition-colors">Home</a>
-            <div class="relative">
-              <a href="#" id="categoriesLink" class="font-medium text-gray-700 hover:text-primary transition-colors flex items-center">
+          <!-- Navigation Menu -->
+          <nav id="mainNav" class="hidden absolute top-full left-0 right-0 bg-white shadow-md py-2 z-30 flex-col space-y-1 md:static md:flex md:flex-row md:items-center md:space-x-6 md:space-y-0 md:w-auto md:bg-transparent md:shadow-none md:py-0">
+            <a href="index.html" class="block px-4 py-2 text-gray-700 hover:text-primary hover:bg-primary-light md:p-0 md:hover:bg-transparent md:font-medium transition-colors">Home</a>
+            <div class="relative"> <!-- This div itself will be part of the flex-col layout on mobile -->
+              <a href="#" id="categoriesLink" class="block px-4 py-2 text-gray-700 hover:text-primary hover:bg-primary-light md:p-0 md:hover:bg-transparent md:font-medium transition-colors flex items-center justify-between md:justify-start">
                 Categories <i class="fas fa-chevron-down text-xs ml-1"></i>
               </a>
-              <div id="categoriesDropdown" class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 hidden py-1">
+              <!-- Mobile: Dropdown might need to be styled to appear correctly within the flow or as an expansion -->
+              <!-- Desktop: Remains absolute positioned -->
+              <div id="categoriesDropdown" class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 hidden py-1 md:mt-2">
                 <!-- Category items will be injected here by JavaScript -->
               </div>
             </div>
-            <a href="https://www.youtube.com/yourchannel" target="_blank" rel="noopener noreferrer" class="font-medium text-gray-700 hover:text-primary transition-colors">Deals</a>
-            <a href="https://www.youtube.com/yourchannel" target="_blank" rel="noopener noreferrer" class="font-medium text-gray-700 hover:text-primary transition-colors">About Us</a>
-               </nav>
+            <a href="https://www.youtube.com/yourchannel" target="_blank" rel="noopener noreferrer" class="block px-4 py-2 text-gray-700 hover:text-primary hover:bg-primary-light md:p-0 md:hover:bg-transparent md:font-medium transition-colors">Deals</a>
+            <a href="https://www.youtube.com/yourchannel" target="_blank" rel="noopener noreferrer" class="block px-4 py-2 text-gray-700 hover:text-primary hover:bg-primary-light md:p-0 md:hover:bg-transparent md:font-medium transition-colors">About Us</a>
+          </nav>
          
-          <button class="md:hidden p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
+          <!-- Hamburger Menu Button -->
+          <button id="mobileMenuBtn" class="md:hidden p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
             <i class="fas fa-bars text-gray-700"></i>
           </button>
         </div>
@@ -159,73 +163,142 @@
 
   <script>
     const apiUrl = "https://firebase-append.vercel.app";
-    let page = 1;
-    const limit = 5;
-    let products = [];
-    let totalFetched = 0;
-    let lastDocId = null;
-    let siteCategories = [];
+    let currentPage = 1; // Current page number, 1-indexed
+    const limit = 6;     // Products per page, matches frontend
+    let products = [];   // Holds products for the current page (raw from API)
+    let totalProductsCount = 0; // Total products from API
+    let siteCategories = []; // Holds categories from API
 
+    // pageStartCursors[N] stores the lastDocId that should be used as a cursor to fetch page N.
+    // Example: pageStartCursors[1] is null (to fetch page 1).
+    // After fetching page 1, if items exist, pageStartCursors[2] will be the ID of the last item from page 1.
+    let pageStartCursors = { 1: null }; 
+    let currentSearchTerm = ""; // To keep track of the active search query
+    let isSearchActive = false; // Flag to indicate if search results are being displayed
 
-    async function fetchProducts() {
+    async function loadProductsForPage(pageToLoad) {
       document.getElementById("loading").classList.remove("hidden");
       document.getElementById("loading").style.display = "block";
       document.getElementById("error").style.display = "none";
+      isSearchActive = false; // Not a search context
+      
+      const cursorForQuery = pageStartCursors[pageToLoad] || "";
+
       try {
-        const response = await fetch(`${apiUrl}/getAll/products?limit=${limit}&lastDocId=${lastDocId || ""}`);
+        const response = await fetch(`${apiUrl}/getAll/products?limit=${limit}&lastDocId=${cursorForQuery}`);
+        if (!response.ok) {
+            throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+        }
         const apiData = await response.json(); // Renamed responseData for clarity with new structure
 
         // Check if apiData has an 'items' property and it's an array
         if (apiData && Array.isArray(apiData.items)) {
           products = apiData.items;
-          totalFetched = apiData.items.length; // totalFetched now reflects the number of items in the current page
+          // totalFetched = apiData.items.length; // This variable seems unused, can be removed if not needed elsewhere
 
-          if (apiData.items.length > 0) {
-            // Update lastDocId from the last item of the current page
-            lastDocId = apiData.items[apiData.items.length - 1].id;
+          // Store total products count from API
+          totalProductsCount = apiData.totalProducts || 0;
+
+          if (products.length > 0) {
+            // If products were loaded for pageToLoad, store the cursor for the *next* page (pageToLoad + 1).
+            const lastItemOnThisPageId = products[products.length - 1].id;
+            pageStartCursors[pageToLoad + 1] = lastItemOnThisPageId;
           }
-          // Populate categories if available and not already populated (or to refresh them)
+          
+          currentPage = pageToLoad; // Update current page state after successful load
+
           if (apiData.categories && Array.isArray(apiData.categories)) {
             siteCategories = apiData.categories;
             renderCategoriesDropdown();
           }
-          // If apiData.items.length is 0, lastDocId remains unchanged.
-          // The nextBtn logic will hide if products.length (i.e., apiData.items.length) is 0 or < limit.
         } else {
-          // If the response doesn't have apiData.items or it's not an array,
-          // treat it as no products found for this page.
           products = [];
-          totalFetched = 0;
+          totalProductsCount = apiData.totalProducts || 0; // Still update total count if provided
           console.error("API response structure error: 'items' array not found or not an array.", apiData);
-          // lastDocId would remain from the previous successful fetch.
+          if (pageToLoad > 1) { // If trying to load a page beyond the first and it's empty
+            currentPage = pageToLoad; // Still update, button logic will handle it
+          }
         }
-        renderProducts();
+        renderProductCards(products, false); // false indicates not search results
+        updatePaginationButtonsVisibility();
       } catch (error) {
+        console.error(`Error fetching products for page ${pageToLoad}:`, error);
         document.getElementById("error").style.display = "block";
+        document.getElementById("error").querySelector('p.text-sm').textContent = `Failed to load products. ${error.message}. Please try again.`;
+        products = []; // Clear products on error
+        renderProductCards(products, false);
+        updatePaginationButtonsVisibility(); // Hide pagination on error
       } finally {
         document.getElementById("loading").style.display = "none";
       }
     }
 
-    function renderProducts() {
+    async function fetchAndDisplaySearchResults(searchTerm) {
+      document.getElementById("loading").classList.remove("hidden");
+      document.getElementById("loading").style.display = "block";
+      document.getElementById("error").style.display = "none";
+      isSearchActive = true; // Search context
+
+      try {
+        // Using the new search API. We'll search in the 'products' collection and by 'title' field.
+        const response = await fetch(`${apiUrl}/search/products?query=${encodeURIComponent(searchTerm)}&field=title`);
+        if (!response.ok) {
+          throw new Error(`Search API request failed: ${response.status} ${response.statusText}`);
+        }
+        const searchResults = await response.json();
+        products = Array.isArray(searchResults) ? searchResults : []; // API returns an array directly
+        
+        renderProductCards(products, true); // true indicates these are search results
+        updatePaginationButtonsVisibility(); // Hide pagination for search results
+
+      } catch (error) {
+        console.error(`Error fetching search results for "${searchTerm}":`, error);
+        document.getElementById("error").style.display = "block";
+        document.getElementById("error").querySelector('p.text-sm').textContent = `Failed to perform search. ${error.message}. Please try again.`;
+        products = [];
+        renderProductCards(products, true);
+        updatePaginationButtonsVisibility();
+      } finally {
+        document.getElementById("loading").style.display = "none";
+      }
+    }
+
+    function handleSearch() {
+      const searchInputVal = document.getElementById("searchInput").value;
+      const headerSearchInputVal = document.getElementById("headerSearchInput").value;
+      // Send the raw search term, backend handles matching (e.g. case-insensitivity if implemented there)
+      const newSearchTerm = searchInputVal || headerSearchInputVal; 
+
+      if (newSearchTerm !== currentSearchTerm) {
+        currentSearchTerm = newSearchTerm;
+        if (currentSearchTerm.trim() === "") {
+          isSearchActive = false;
+          loadProductsForPage(1); // Reset to first page of all products
+        } else {
+          fetchAndDisplaySearchResults(currentSearchTerm.trim());
+        }
+      }
+    }
+
+    function renderProductCards(productsToDisplay, isSearchResultContext = false) {
       const container = document.getElementById("productContainer");
-      container.innerHTML = "";
-      const search = document.getElementById("searchInput").value.toLowerCase();
-      const headerSearch = document.getElementById("headerSearchInput").value.toLowerCase();
-      const combinedSearch = search || headerSearch;
+      container.innerHTML = ""; // Clear previous products
       
-      const filteredProducts = products.filter(
-        (p) =>
-          p.title.toLowerCase().includes(combinedSearch) ||
-          p.description.toLowerCase().includes(combinedSearch)
-      );
-      
-      if (filteredProducts.length === 0) {
+      if (productsToDisplay.length === 0) {
+        let messageTitle = "No products found";
+        let messageDetail = "Try adjusting your search criteria or exploring other pages.";
+        if (isSearchResultContext && currentSearchTerm) {
+          messageTitle = "No products match your search";
+          messageDetail = "Try a different search term or clear the search to see all products on this page.";
+        } else if (!isSearchResultContext && products.length === 0 && currentPage > 0) {
+          messageTitle = "No products on this page";
+          messageDetail = "Try the previous page or check back later.";
+        }
         container.innerHTML = `
           <div class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-16">
-            <i class="fas fa-search text-4xl text-gray-300 mb-4"></i>
-            <h3 class="text-xl font-bold text-gray-700">No products found</h3>
-            <p class="text-gray-500 mt-2">Try adjusting your search criteria</p>
+            <i class="fas ${isSearchResultContext && currentSearchTerm ? 'fa-search' : 'fa-box-open'} text-4xl text-gray-300 mb-4"></i>
+            <h3 class="text-xl font-bold text-gray-700">${messageTitle}</h3>
+            <p class="text-gray-500 mt-2">${messageDetail}</p>
           </div>
         `;
         // Hide pagination buttons if no products are found
@@ -233,9 +306,8 @@
         document.getElementById("nextBtn").style.display = "none";
         return;
       }
-      
-      filteredProducts.forEach((product) => {
-        // Calculate discount percentage
+            
+      productsToDisplay.forEach((product) => {
         const originalPrice = parseFloat(product.originalPrice);
         const currentPrice = parseFloat(product.price);
         const discountPercentage = Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
@@ -290,10 +362,22 @@
         `;
         container.appendChild(card);
       });
-      
-      document.getElementById("prevBtn").style.display = page > 1 ? "inline-flex" : "none";
-      document.getElementById("nextBtn").style.display = (products.length < limit || filteredProducts.length === 0) ? "none" : "inline-flex";
     }
+
+    function updatePaginationButtonsVisibility() {
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+
+      if (isSearchActive) { // Hide pagination if search is active
+        prevBtn.style.display = "none";
+        nextBtn.style.display = "none";
+      } else {
+        prevBtn.style.display = currentPage > 1 ? "inline-flex" : "none";
+        const maxItemsPossibleUpToCurrentPage = currentPage * limit;
+        nextBtn.style.display = (products.length === limit && maxItemsPossibleUpToCurrentPage < totalProductsCount) ? "inline-flex" : "none";
+      }
+    }
+
      function viewProductDetails(productId, productData) {
       // Store the product data in sessionStorage
       sessionStorage.setItem(`product_${productId}`, JSON.stringify(productData));
@@ -323,23 +407,24 @@
     }
 
     // Initialize search event listeners for both search inputs
-    document.getElementById("searchInput").addEventListener("input", renderProducts);
-    document.getElementById("headerSearchInput").addEventListener("input", renderProducts);
+    document.getElementById("searchInput").addEventListener("input", handleSearch);
+    document.getElementById("headerSearchInput").addEventListener("input", handleSearch);
 
+    // Event Listeners for pagination buttons
     document.getElementById("prevBtn").addEventListener("click", () => {
-      page--;
-      fetchProducts();
-      // Scroll to top after page change
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (currentPage > 1) {
+        loadProductsForPage(currentPage - 1);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     });
     
     document.getElementById("nextBtn").addEventListener("click", () => {
-      page++;
-      fetchProducts();
-      // Scroll to top after page change
+      loadProductsForPage(currentPage + 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
+
+    // --- Categories Dropdown Logic (remains the same) ---
     // Categories dropdown toggle
     const categoriesLink = document.getElementById('categoriesLink');
     const categoriesDropdown = document.getElementById('categoriesDropdown');
@@ -362,7 +447,29 @@
         categoriesDropdown.classList.add('hidden');
       }
     });
-    fetchProducts();
+    // --- End Categories Dropdown Logic ---
+
+    // --- Mobile Menu Toggle Logic ---
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mainNav = document.getElementById('mainNav');
+
+    if (mobileMenuBtn && mainNav) {
+      mobileMenuBtn.addEventListener('click', () => {
+        mainNav.classList.toggle('hidden');
+        // Optional: Change hamburger icon to close icon & vice-versa
+        const icon = mobileMenuBtn.querySelector('i');
+        if (mainNav.classList.contains('hidden')) {
+          icon.classList.remove('fa-times');
+          icon.classList.add('fa-bars');
+        } else {
+          icon.classList.remove('fa-bars');
+          icon.classList.add('fa-times');
+        }
+      });
+    }
+    // --- End Mobile Menu Toggle Logic ---
+
+    loadProductsForPage(1); // Initial fetch for the first page
   </script>
 </body>
 </html>
